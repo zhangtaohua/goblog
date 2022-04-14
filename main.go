@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -64,9 +65,21 @@ func forceHTMLMiddleware(next http.Handler) http.Handler {
 // 	http.ListenAndServe(":3002", nil)
 // }
 
+func removeTrailingSlash(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 1 除首页以外， 移除所有请求路径后面的斜杆
+		if r.URL.Path != "/" {
+			r.URL.Path = strings.TrimSuffix(r.URL.Path, "/")
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	// router := http.NewServeMux()
 	router := mux.NewRouter()
+	// router := mux.NewRouter().StrictSlash(true) // cannot handle POST  not Use
 
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
@@ -87,7 +100,8 @@ func main() {
 	articleURL, whatFuck := router.Get("articles.show").URL("id", "25")
 	fmt.Println("articleURL", articleURL, whatFuck)
 
-	http.ListenAndServe(":3002", router)
+	// http.ListenAndServe(":3002", router)
+	http.ListenAndServe(":3002", removeTrailingSlash(router))
 }
 
 // Content-Type
