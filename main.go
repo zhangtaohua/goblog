@@ -120,6 +120,7 @@ func (a Article) Delete() (rowsAffected int64, err error) {
 
 	// √ 删除成功，跳转到文章详情页
 	if n, _ := rs.RowsAffected(); n > 0 {
+		fmt.Println("SQL 调用成功 ！！ id" + strconv.FormatInt(a.ID, 10))
 		return n, nil
 	}
 
@@ -548,6 +549,7 @@ func articlesDeleteHandler(w http.ResponseWriter, r *http.Request) {
 			if rowsAffected > 0 {
 				// 重定向到文章列表页
 				indexURL, _ := router.Get("articles.index").URL()
+				fmt.Println("删除成功后开始调转！")
 				http.Redirect(w, r, indexURL.String(), http.StatusFound)
 			} else {
 				// Edge case
@@ -573,7 +575,7 @@ func main() {
 	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
 	router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesUpdateHandler).Methods("POST").Name("articles.update")
-	router.HandleFunc("/articles/{id:[0-9]+}", articlesDeleteHandler).Methods("POST").Name("articles.delete")
+	router.HandleFunc("/articles/{id:[0-9]+}/delete", articlesDeleteHandler).Methods("POST").Name("articles.delete")
 
 	// 自定义 404 page
 	router.NotFoundHandler = http.HandlerFunc(notFoundHadnler)
