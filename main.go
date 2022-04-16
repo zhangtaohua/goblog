@@ -26,13 +26,14 @@ func initDB() {
 	config := mysql.Config{
 		User:                 "root",
 		Passwd:               "123456",
-		Addr:                 "127.0.0.1:33030",
+		Addr:                 "127.0.0.1:33060",
 		Net:                  "tcp",
 		DBName:               "goblog",
 		AllowNativePasswords: true,
 	}
 
 	// 准备数据库连接池
+	// DSN -> Data Source Name 定义数据库的连接信息， 不同的数据库不一样
 	db, err = sql.Open("mysql", config.FormatDSN())
 	checkError(err)
 
