@@ -5,10 +5,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/zhangtaohua/goblog/app/http/controllers"
+	"github.com/zhangtaohua/goblog/app/http/middlewares"
 )
 
 // RegisterWebRoutes 注册网页相关路由
 func RegisterWebRoutes(r *mux.Router) {
+
+	r.Use(middlewares.ForceHTML)
 
 	// 静态页面
 	pc := new(controllers.PagesController)
