@@ -1,6 +1,7 @@
 package article
 
 import (
+	"github.com/zhangtaohua/goblog/pkg/logger"
 	"github.com/zhangtaohua/goblog/pkg/model"
 	"github.com/zhangtaohua/goblog/pkg/types"
 )
@@ -23,4 +24,26 @@ func GetAll() ([]Article, error) {
 		return articles, err
 	}
 	return articles, nil
+}
+
+// Create 创建文章，通过 article.ID 来判断是否创建成功
+func (article *Article) Create() (err error) {
+	result := model.DB.Create(&article)
+	if err = result.Error; err != nil {
+		logger.LogError(err)
+		return err
+	}
+
+	return nil
+}
+
+// Update 更新文章
+func (article *Article) Update() (rowsAffected int64, err error) {
+	result := model.DB.Save(&article)
+	if err = result.Error; err != nil {
+		logger.LogError(err)
+		return 0, err
+	}
+
+	return result.RowsAffected, nil
 }
