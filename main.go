@@ -13,7 +13,7 @@ func main() {
 
 	router := bootstrap.SetupRoute()
 
-	err := http.ListenAndServe(":3002", middlewares.RemoveTrailingSlash(router))
+	err := http.ListenAndServe(":3003", middlewares.RemoveTrailingSlash(router))
 	logger.LogError(err)
 }
 
