@@ -12,7 +12,7 @@ type AuthController struct {
 
 // Register 注册页面
 func (*AuthController) Register(w http.ResponseWriter, r *http.Request) {
-	view.Render(w, view.D{}, "auth.register")
+	view.RenderSimple(w, view.D{}, "auth.register")
 }
 
 // DoRegister 处理注册逻辑
