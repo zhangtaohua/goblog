@@ -1,6 +1,9 @@
 package user
 
-import "github.com/zhangtaohua/goblog/app/models"
+import (
+	"github.com/zhangtaohua/goblog/app/models"
+	"github.com/zhangtaohua/goblog/pkg/password"
+)
 
 // User 用户模型
 // type User struct {
@@ -26,6 +29,6 @@ type User struct {
 }
 
 // ComparePassword 对比密码是否匹配
-func (user *User) ComparePassword(password string) bool {
-	return user.Password == password
+func (user *User) ComparePassword(_password string) bool {
+	return password.CheckHash(_password, user.Password)
 }
