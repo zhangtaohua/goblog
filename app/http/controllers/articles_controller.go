@@ -4,10 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"strconv"
-	"unicode/utf8"
 
 	"github.com/zhangtaohua/goblog/app/models/article"
+	"github.com/zhangtaohua/goblog/app/requests"
 	"github.com/zhangtaohua/goblog/pkg/logger"
 	"github.com/zhangtaohua/goblog/pkg/route"
 	"github.com/zhangtaohua/goblog/pkg/view"
@@ -119,64 +118,32 @@ func (*ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
 // Store 文章创建页面
 func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 
-	title := r.PostFormValue("title")
-	body := r.PostFormValue("body")
+	// 1. 初始化数据
+	_article := article.Article{
+		Title: r.PostFormValue("title"),
+		Body:  r.PostFormValue("body"),
+	}
 
-	errors := validateArticleFormData(title, body)
+	// 2. 表单验证
+	errors := requests.ValidateArticleForm(_article)
 
-	// 检查是否有错误
+	// 3. 检测错误
 	if len(errors) == 0 {
-		_article := article.Article{
-			Title: title,
-			Body:  body,
-		}
+		// 创建文章
 		_article.Create()
 		if _article.ID > 0 {
-			fmt.Fprint(w, "插入成功，ID 为"+strconv.FormatUint(_article.ID, 10))
+			indexURL := route.Name2URL("articles.show", "id", _article.GetStringID())
+			http.Redirect(w, r, indexURL, http.StatusFound)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprint(w, "创建文章失败，请联系管理员")
 		}
 	} else {
-		// storeURL := route.Name2URL("articles.store")
-
-		// data := ArticlesFormData{
-		// 	Title:  title,
-		// 	Body:   body,
-		// 	URL:    storeURL,
-		// 	Errors: errors,
-		// }
-		// tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
-
-		// logger.LogError(err)
-
-		// err = tmpl.Execute(w, data)
-		// logger.LogError(err)
 		view.Render(w, view.D{
-			"Title":  title,
-			"Body":   body,
-			"Errors": errors,
+			"Article": _article,
+			"Errors":  errors,
 		}, "articles.create", "articles._form_field")
 	}
-}
-
-func validateArticleFormData(title string, body string) map[string]string {
-	errors := make(map[string]string)
-	// 验证标题
-	if title == "" {
-		errors["title"] = "标题不能为空"
-	} else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(title) > 40 {
-		errors["title"] = "标题长度需介于 3-40"
-	}
-
-	// 验证内容
-	if body == "" {
-		errors["body"] = "内容不能为空"
-	} else if utf8.RuneCountInString(body) < 10 {
-		errors["body"] = "内容长度需大于或等于 10 个字节"
-	}
-
-	return errors
 }
 
 // Edit 文章更新页面
@@ -203,10 +170,8 @@ func (*ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// 4. 读取成功，显示编辑文章表单
 		view.Render(w, view.D{
-			"Title":   _article.Title,
-			"Body":    _article.Body,
 			"Article": _article,
-			"Errors":  nil,
+			"Errors":  view.D{},
 		}, "articles.edit", "articles._form_field")
 	}
 }
@@ -236,17 +201,14 @@ func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 		// 4. 未出现错误
 
 		// 4.1 表单验证
-		title := r.PostFormValue("title")
-		body := r.PostFormValue("body")
+		_article.Title = r.PostFormValue("title")
+		_article.Body = r.PostFormValue("body")
 
-		errors := validateArticleFormData(title, body)
+		errors := requests.ValidateArticleForm(_article)
 
 		if len(errors) == 0 {
 
 			// 4.2 表单验证通过，更新数据
-			_article.Title = title
-			_article.Body = body
-
 			rowsAffected, err := _article.Update()
 
 			if err != nil {
@@ -266,23 +228,7 @@ func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 		} else {
 
 			// 4.3 表单验证不通过，显示理由
-
-			// updateURL := route.Name2URL("articles.update", "id", id)
-			// data := ArticlesFormData{
-			// 	Title:  title,
-			// 	Body:   body,
-			// 	URL:    updateURL,
-			// 	Errors: errors,
-			// }
-			// tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
-			// logger.LogError(err)
-
-			// err = tmpl.Execute(w, data)
-			// logger.LogError(err)
-
 			view.Render(w, view.D{
-				"Title":   title,
-				"Body":    body,
 				"Article": _article,
 				"Errors":  errors,
 			}, "articles.edit", "articles._form_field")
