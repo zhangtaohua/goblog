@@ -5,15 +5,21 @@ import (
 
 	"github.com/zhangtaohua/goblog/app/http/middlewares"
 	"github.com/zhangtaohua/goblog/bootstrap"
+	"github.com/zhangtaohua/goblog/config"
+	c "github.com/zhangtaohua/goblog/pkg/config"
 	"github.com/zhangtaohua/goblog/pkg/logger"
 )
+
+func init() {
+	config.Initialize()
+}
 
 func main() {
 	bootstrap.SetupDB()
 
 	router := bootstrap.SetupRoute()
 
-	err := http.ListenAndServe(":3003", middlewares.RemoveTrailingSlash(router))
+	err := http.ListenAndServe(":"+c.GetString("app.port"), middlewares.RemoveTrailingSlash(router))
 	logger.LogError(err)
 }
 
