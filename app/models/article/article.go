@@ -12,10 +12,11 @@ import (
 type Article struct {
 	models.BaseModel
 
-	Title  string `gorm:"type:varchar(255);not null;" valid:"title"`
-	Body   string `gorm:"type:longtext;not null;" valid:"body"`
-	UserID uint64 `gorm:"not null;index"`
-	User   user.User
+	Title    string `gorm:"type:varchar(255);not null;" valid:"title"`
+	Body     string `gorm:"type:longtext;not null;" valid:"body"`
+	UserID   uint64 `gorm:"not null;index"`
+	User     user.User
+	Category uint64 `gorm:"not null;default:4; index"`
 }
 
 // 这是一个 Object 的方法

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zhangtaohua/goblog/app/models/article"
 	"github.com/zhangtaohua/goblog/app/models/category"
 	"github.com/zhangtaohua/goblog/app/requests"
+	"github.com/zhangtaohua/goblog/pkg/config"
 	"github.com/zhangtaohua/goblog/pkg/flash"
 	"github.com/zhangtaohua/goblog/pkg/route"
 	"github.com/zhangtaohua/goblog/pkg/view"
@@ -54,6 +56,27 @@ func (*CategoriesController) Store(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (*CategoriesController) Show(w http.ResponseWriter, r *http.Request) {
+// Show 显示分类下的文章列表
+func (cc *CategoriesController) Show(w http.ResponseWriter, r *http.Request) {
 
+	// 1. 获取 URL 参数
+	id := route.GetRouteVariable("id", r)
+
+	// 2. 读取对应的数据
+	_category, err := category.Get(id)
+
+	// 3. 获取结果集
+	perpage := config.GetInt("pagination.perpage")
+	articles, pagerData, err := article.GetByCategoryID(_category.GetStringID(), r, perpage)
+
+	if err != nil {
+		cc.ResponseForSQLError(w, err)
+	} else {
+
+		// ---  2. 加载模板 ---
+		view.Render(w, view.D{
+			"Articles":  articles,
+			"PagerData": pagerData,
+		}, "articles.index", "articles._article_meta")
+	}
 }
